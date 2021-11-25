@@ -5,10 +5,20 @@ using UnityEngine;
 public class Movement : MonoBehaviour
 {
     public CharacterController controller;
+    public GameObject groundCheck;
+    private GroundCheck checker;
     public float speed;
+    public Vector3 velocity;
+    public float jumpHeight = 3.0f;
+    public float gravity = -9.81f;
     public int direction = 4;
     private int quedDir = 1;
     private bool qued = false;
+
+    void Start()
+    {
+        checker = groundCheck.GetComponent<GroundCheck>();
+    }
 
     // Update is called once per frame
     void Update()
@@ -28,7 +38,7 @@ public class Movement : MonoBehaviour
             && !Physics.Raycast(this.transform.position, Vector3.forward, out hit, 1.5f);
         if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
         {
-            if (up)
+            if (up || !checker.isGrounded)
             {
                 direction = 1;
                 qued = false;
@@ -41,7 +51,7 @@ public class Movement : MonoBehaviour
         }
         else if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
         {
-            if (right)
+            if (right || !checker.isGrounded)
             {
                 direction = 2;
                 qued = false;
@@ -54,7 +64,7 @@ public class Movement : MonoBehaviour
         }
         else if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
         {
-            if (down)
+            if (down || !checker.isGrounded)
             {
                 direction = 3;
                 qued = false;
@@ -67,7 +77,7 @@ public class Movement : MonoBehaviour
         }
         else if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
         {
-            if (left)
+            if (left || !checker.isGrounded)
             {
                 direction = 4;
                 qued = false;
@@ -80,22 +90,22 @@ public class Movement : MonoBehaviour
         }
         else if (qued)
         {
-            if (quedDir == 1 && up)
+            if (quedDir == 1 && (up || !checker.isGrounded))
             {
                 direction = 1;
                 qued = false;
             }
-            else if (quedDir == 2 && right)
+            else if (quedDir == 2 && (right || !checker.isGrounded))
             {
                 direction = 2;
                 qued = false;
             }
-            else if (quedDir == 3 && down)
+            else if (quedDir == 3 && (down || !checker.isGrounded))
             {
                 direction = 3;
                 qued = false;
             }
-            else if (quedDir == 4 && left)
+            else if (quedDir == 4 && (left || !checker.isGrounded))
             {
                 direction = 4;
                 qued = false;
@@ -123,5 +133,24 @@ public class Movement : MonoBehaviour
         movement = movement.normalized * speed * Time.deltaTime;
 
         controller.Move(movement);
+
+        if (checker.isGrounded && velocity.y < 0)
+        {
+            velocity.y = 0f;
+        }
+
+        if (velocity.y > 0)
+        {
+            checker.isGrounded = false;
+        }
+
+        if (Input.GetButtonDown("Jump") && checker.isGrounded && Manager.jumps > 0)
+        {
+            velocity.y += Mathf.Sqrt(jumpHeight * -3.0f * gravity);
+            Manager.jumps--;
+        }
+
+        velocity.y += gravity * Time.deltaTime;
+        controller.Move(velocity * Time.deltaTime);
     }
 }

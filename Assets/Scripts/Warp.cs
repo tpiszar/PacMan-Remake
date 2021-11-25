@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class Warp : MonoBehaviour
 {
@@ -17,6 +18,14 @@ public class Warp : MonoBehaviour
         {
             newLocation.z++;
         }
-        other.gameObject.transform.position = newLocation;
+        newLocation.y = 1f;
+        if (other.gameObject.name != "PacMan")
+        {
+            other.gameObject.GetComponent<NavMeshAgent>().Warp(newLocation);
+        }
+        else
+        {
+            other.gameObject.transform.position = newLocation;
+        }
     }
 }
